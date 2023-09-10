@@ -1,0 +1,119 @@
+---
+title: "Mid-points of `glm()` frequentist models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{midpoints-glm}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>"
+)
+```
+
+```{r setup}
+library(midpoints)
+library(ggplot2)
+library(ggdist)
+
+vocabulary <- sim_data()
+head(vocabulary_2)
+```
+
+
+# Generalized Linear Model (`glm`)
+
+## One predictor
+
+```{r glm-1}
+fit <- glm(y ~ x,
+           family = binomial("logit"),
+           data = vocabulary)
+
+summary(fit)
+```
+
+```{r glm-1-midpoint}
+midpoints <- midpoint(fit, vocabulary)
+
+head(midpoints)
+```
+
+```{r fig-glm-1}
+model.preds <- fitted(object = fit)
+
+vocabulary |> 
+    ggplot(aes(x, y)) +
+    geom_hline(yintercept = 1/2,
+               linetype = "dotted") +
+    geom_jitter(height = 1/20,
+                shape = 1,
+                stroke = 1,
+                alpha = 1/2) +
+    geom_line(aes(y = model.preds),
+              linewidth = 3/4) + 
+    geom_segment(data = midpoints,
+                 aes(x = .mid, xend = .mid,
+                     y = 0, yend = 1/2),
+                 colour = "red") +
+    geom_point(data = midpoints,
+               aes(x = .mid, y = 1/2),
+               colour = "red") 
+```
+
+## Two predictors
+
+```{r glm-2-data}
+vocabulary_2 <- purrr::map2_dfr(
+    .x = c(15, 25),
+    .y = c("a", "b"),
+    .f =  \(x, y) {
+        d <- sim_data(n_id = 5, x0 = x)
+        d$pred_1 <- y
+        return(d)
+    })
+
+head(vocabulary_2)
+```
+
+
+```{r glm-2}
+fit_2 <- glm(y ~ x + pred_1,
+             family = binomial("logit"),
+             data = vocabulary_2)
+
+summary(fit_2)
+```
+
+```{r glm-2-midpoint}
+midpoints <- midpoint(fit_2, vocabulary_2)
+
+head(midpoints)
+```
+
+```{r fig-glm-2}
+model.preds <- fitted(object = fit_2)
+
+vocabulary_2 |> 
+    ggplot(aes(x, y, colour = pred_1)) +
+    geom_hline(yintercept = 1/2,
+               linetype = "dotted") +
+    geom_jitter(height = 1/20,
+                shape = 1,
+                stroke = 1,
+                alpha = 1/2) +
+    geom_line(aes(y = model.preds),
+              linewidth = 3/4) + 
+    geom_segment(data = midpoints,
+                 aes(x = .mid, xend = .mid,
+                     y = 0, yend = 1/2)) +
+    geom_point(data = midpoints,
+               aes(x = .mid, y = 1/2)) 
+```
+
+
+
+

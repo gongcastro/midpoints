@@ -1,0 +1,17 @@
+Package: midpoints
+Title: Compute the mid-point of a logistic growth curves from the outputs of (mutivariable) logistic regression models.
+Version: 0.0.0.9000
+Authors@R: 
+    person("Gonzalo", "Garcia-Castro", "gonzalo.garciadecastro@upf.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "https://orcid.org/0000-0002-8553-4209"))
+Description: Compute the mid-point of a logistic growth curves from the outputs of (mutivariable) logistic regression models.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr
