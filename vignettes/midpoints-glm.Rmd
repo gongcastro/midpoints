@@ -183,7 +183,7 @@ head(vocabulary_4)
 ```
 
 
-```{r glm-3}
+```{r glm-4}
 fit_4 <- glm(y ~ x * pred_1,
              family = binomial("logit"),
              data = vocabulary_4)
@@ -197,10 +197,10 @@ midpoints <- midpoint.glm(fit_4, vocabulary_4)
 head(midpoints)
 ```
 
-```{r fig-glm-4}
-model.preds <- fitted(object = fit_4)
+```{r fig-glm-5}
+model.preds <- fitted(object = fit_5)
 
-vocabulary_4 |> 
+vocabulary_5 |> 
     ggplot(aes(x, y, colour = pred_1)) +
     geom_hline(yintercept = 1/2,
                linetype = "dotted") +
@@ -215,4 +215,59 @@ vocabulary_4 |>
                      y = 0, yend = 1/2)) +
     geom_point(data = midpoints,
                aes(x = .mid, y = 1/2)) 
+```
+
+
+## Two predictors (both continuous) and interaction
+
+```{r glm-5-data}
+vocabulary_5 <- vocabulary_3
+
+head(vocabulary_5)
+```
+
+
+```{r glm-5}
+fit_5 <- glm(y ~ x * pred_1,
+             family = binomial("logit"),
+             data = vocabulary_5)
+
+summary(fit_4)
+```
+
+```{r glm-5-midpoint}
+nd <- data.frame(pred_1 = c(-1, 0, 1))
+midpoints <- midpoint.glm(fit_5, nd)
+midpoints$pred_1 <- as.factor(nd$pred_1)
+
+head(midpoints)
+```
+
+
+```{r fig-glm-5}
+model.preds <- expand.grid(pred_1 = nd$pred_1, 
+                           x = vocabulary_5$x)
+
+model.preds$y <- plogis(predict(object = fit_5, 
+                                model.preds))
+model.preds$pred_1 <- as.factor(model.preds$pred_1)
+
+vocabulary_5 |> 
+    ggplot(aes(x, y)) +
+    geom_hline(yintercept = 1/2,
+               linetype = "dotted") +
+    geom_jitter(height = 1/20,
+                shape = 1,
+                stroke = 1,
+                alpha = 1/2) +
+    geom_line(data = model.preds,
+              aes(colour = pred_1),
+              linewidth = 3/4) +
+    geom_segment(data = midpoints,
+                 aes(x = .mid, xend = .mid,
+                     y = 0, yend = 1/2,
+                     colour = as.factor(pred_1))) +
+    geom_point(data = midpoints,
+               aes(x = .mid, y = 1/2,
+                   colour = as.factor(pred_1))) 
 ```
