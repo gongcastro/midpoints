@@ -138,7 +138,7 @@ fit_3 <- glm(y ~ x + pred_1,
 summary(fit_3)
 ```
 
-```{r glm-2-midpoint}
+```{r glm-3-midpoint}
 nd <- data.frame(pred_1 = c(-1, 0, 1))
 midpoints <- midpoint.glm(fit_3, nd)
 midpoints$pred_1 <- as.factor(nd$pred_1)
@@ -174,5 +174,45 @@ vocabulary_3 |>
                    colour = pred_1)) 
 ```
 
+## Two predictors (one categorical) and interaction
+
+```{r glm-4-data}
+vocabulary_4 <- vocabulary_2
+
+head(vocabulary_4)
+```
 
 
+```{r glm-3}
+fit_4 <- glm(y ~ x * pred_1,
+             family = binomial("logit"),
+             data = vocabulary_4)
+
+summary(fit_4)
+```
+
+```{r glm-4-midpoint}
+midpoints <- midpoint.glm(fit_4, vocabulary_4)
+
+head(midpoints)
+```
+
+```{r fig-glm-4}
+model.preds <- fitted(object = fit_4)
+
+vocabulary_4 |> 
+    ggplot(aes(x, y, colour = pred_1)) +
+    geom_hline(yintercept = 1/2,
+               linetype = "dotted") +
+    geom_jitter(height = 1/20,
+                shape = 1,
+                stroke = 1,
+                alpha = 1/2) +
+    geom_line(aes(y = model.preds),
+              linewidth = 3/4) + 
+    geom_segment(data = midpoints,
+                 aes(x = .mid, xend = .mid,
+                     y = 0, yend = 1/2)) +
+    geom_point(data = midpoints,
+               aes(x = .mid, y = 1/2)) 
+```

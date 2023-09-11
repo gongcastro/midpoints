@@ -24,7 +24,8 @@ midpoint.glm <- function(object, newdata, x = "x")
     # update model formula
     form <- formula(object)
     form.terms <- attr(terms(form), "term.labels")
-    is.intercept.only <- length(coefs.num)==1
+    is.intercept.only <- length(coefs.num)==1L
+    is.univariable <- length(coefs.den)==1L
     form.terms.new <- ifelse(is.intercept.only, "1",
                              form.terms[!grepl(x, form.terms)])
     form.new <- reformulate(form.terms.new)
@@ -32,16 +33,24 @@ midpoint.glm <- function(object, newdata, x = "x")
     # get model matrix
     if (is.intercept.only) {
         nd <- as.data.frame(1)
+        mat <- model.matrix(form.new, frame)
+        numerator <- mat %*% coefs.num
+        denominator <- mat %*% coefs.den
+    } else if (is.univariable) {
+        nd <- newdata[!duplicated(newdata[, form.terms.new]), , drop = FALSE]
+        frame <- model.frame(form.new, nd)
+        mat <- model.matrix(form.new, frame)
+        numerator <- mat %*% coefs.num
+        denominator <- mat[, 1] * coefs.den
     } else {
         nd <- newdata[!duplicated(newdata[, form.terms.new]), , drop = FALSE]
-        coefs.den <- coefs.den
+        frame <- model.frame(form.new, nd)
+        mat <- model.matrix(form.new, frame)
+        numerator <- mat %*% coefs.num
+        denominator <- mat %*% coefs.den
     }
-    frame <- model.frame(form.new, nd)
-    mat <- model.matrix(form.new, frame)
 
     # compute midpoints
-    numerator <- mat %*% coefs.num
-    denominator <- mat[, 1] * coefs.den
     midpoints <- as.vector(-numerator / denominator)
 
     # prepare output data frame
