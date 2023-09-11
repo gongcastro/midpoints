@@ -20,13 +20,13 @@ library(ggplot2)
 library(ggdist)
 
 vocabulary <- sim_data()
-head(vocabulary_2)
+head(vocabulary)
 ```
 
 
 # Generalized Linear Model (`glm`)
 
-## One predictor
+## One categorical predictor
 
 ```{r glm-1}
 fit <- glm(y ~ x,
@@ -37,7 +37,7 @@ summary(fit)
 ```
 
 ```{r glm-1-midpoint}
-midpoints <- midpoint(fit, vocabulary)
+midpoints <- midpoint.glm(fit, vocabulary)
 
 head(midpoints)
 ```
@@ -64,7 +64,7 @@ vocabulary |>
                colour = "red") 
 ```
 
-## Two predictors
+## Two predictors (one categorical)
 
 ```{r glm-2-data}
 vocabulary_2 <- purrr::map2_dfr(
@@ -89,7 +89,7 @@ summary(fit_2)
 ```
 
 ```{r glm-2-midpoint}
-midpoints <- midpoint(fit_2, vocabulary_2)
+midpoints <- midpoint.glm(fit_2, vocabulary_2)
 
 head(midpoints)
 ```
@@ -114,6 +114,65 @@ vocabulary_2 |>
                aes(x = .mid, y = 1/2)) 
 ```
 
+## Two predictors (both continuous)
+
+```{r glm-3-data}
+vocabulary_3 <- purrr::map2_dfr(
+    .x = c(15, 25),
+    .y = c(0, 4),
+    .f =  \(x, y) {
+        d <- sim_data(n_id = 5, x0 = x)
+        d$pred_1 <- rnorm(nrow(d), y, 1)
+        return(d)
+    })
+
+head(vocabulary_3)
+```
+
+
+```{r glm-3}
+fit_3 <- glm(y ~ x + pred_1,
+             family = binomial("logit"),
+             data = vocabulary_3)
+
+summary(fit_3)
+```
+
+```{r glm-2-midpoint}
+nd <- data.frame(pred_1 = c(-1, 0, 1))
+midpoints <- midpoint.glm(fit_3, nd)
+midpoints$pred_1 <- as.factor(nd$pred_1)
+
+head(midpoints)
+```
+
+```{r fig-glm-3}
+model.preds <- expand.grid(pred_1 = nd$pred_1, 
+                           x = vocabulary$x)
+
+model.preds$y <- plogis(predict(object = fit_3, 
+                                model.preds))
+model.preds$pred_1 <- as.factor(model.preds$pred_1)
+
+vocabulary_3 |> 
+    ggplot(aes(x, y)) +
+    geom_hline(yintercept = 1/2,
+               linetype = "dotted") +
+    geom_jitter(height = 1/20,
+                shape = 1,
+                stroke = 1,
+                alpha = 1/2) +
+    geom_line(data = model.preds,
+              aes(colour = pred_1),
+              linewidth = 3/4) +
+    geom_segment(data = midpoints,
+                 aes(x = .mid, xend = .mid,
+                     y = 0, yend = 1/2,
+                     colour = pred_1)) +
+    geom_point(data = midpoints,
+               aes(x = .mid, y = 1/2,
+                   colour = pred_1)) 
+```
 
 
 

@@ -13,7 +13,6 @@ midpoint <- function(newdata, object, x, ...)
     UseMethod("midpoint")
 }
 
-
 # function to compute midpoints
 midpoint.glm <- function(object, newdata, x = "x")
 {
@@ -32,7 +31,7 @@ midpoint.glm <- function(object, newdata, x = "x")
 
     # get model matrix
     if (is.intercept.only) {
-        nd <- nd[!(names(nd) %in% names(coefs.den))]
+        nd <- as.data.frame(1)
     } else {
         nd <- newdata[!duplicated(newdata[, form.terms.new]), , drop = FALSE]
         coefs.den <- coefs.den
